@@ -5,9 +5,12 @@
   "type": "module",
   "files": [
     "*.schema.json",
-    "wcag-rule-registry.yaml"
+    "wcag-rule-registry.yaml",
+    "types"
   ],
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "types": "./types/index.d.ts",
+  "sideEffects": false
 }

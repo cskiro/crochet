@@ -23,19 +23,19 @@ Transform the accessibility audit workflow into a reusable public utility that s
 - ✅ Roadmap and planning docs captured in version control.
 - ✅ Internal planning artifacts established instead of GitHub Issues for initial execution.
 
-## Phase 2 – Protocol & Packaging (In Progress)
+## Phase 2 – Protocol & Packaging ✅
 - ✅ Copy WCAG audit protocol into `docs/protocols/` with project-local changelog.
 - ✅ Normalize JSON schemas under `packages/schemas/` and prepare for publishing.
 - ✅ Relocate manual checklists and automation guides to `docs/playbooks/`.
 - ✅ Provide anonymized sample outputs under `examples/reports/`.
-- ▢ Generate TypeScript types from schemas for downstream consumers.
-- ▢ Add validation test harness to verify sample outputs against schemas.
+- ✅ Generate TypeScript types from schemas for downstream consumers.
+- ✅ Add validation test harness to verify sample outputs against schemas.
 
-### Phase 2 Success Criteria
-- Protocol, schemas, playbooks, and examples live in the public repo with project-owned change history.
-- Schemas validated against sample reports and ready for publication as `@crochet/schemas`.
-- Playbooks reference official WCAG resources and align with protocol instructions.
-- Follow-up tasks (type generation, validation harness) tracked for completion.
+### Phase 2 Success Criteria (Met)
+- ✅ Protocol, schemas, playbooks, and examples live in the public repo with project-owned change history.
+- ✅ Schemas validated against sample reports and ready for publication as `@crochet/schemas`.
+- ✅ Playbooks reference official WCAG resources and align with protocol instructions.
+- ✅ Type generation and validation harness in place to guard against regressions.
 
 ## Phase 3 – CLI & Automation
 - Scaffold CLI package (`packages/cli`) to orchestrate protocol execution, schema validation, and report generation.
