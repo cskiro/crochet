@@ -1,0 +1,25 @@
+{
+  "name": "@crochet/cli",
+  "version": "0.0.0",
+  "description": "CLI for running Crochet accessibility audits",
+  "bin": {
+    "crochet": "dist/index.js"
+  },
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "dev": "tsup src/index.ts --format esm --watch --dts"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "yaml": "^2.6.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  },
+  "peerDependencies": {
+    "@crochet/schemas": "workspace:*"
+  }
+}

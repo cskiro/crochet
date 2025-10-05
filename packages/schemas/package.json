@@ -12,5 +12,21 @@
     "access": "public"
   },
   "types": "./types/index.d.ts",
-  "sideEffects": false
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./accessibility-gaps.schema.json"
+    },
+    "./accessibility-gaps.schema.json": {
+      "default": "./accessibility-gaps.schema.json"
+    },
+    "./contrast-validation.schema.json": {
+      "default": "./contrast-validation.schema.json"
+    },
+    "./types": {
+      "types": "./types/index.d.ts",
+      "default": "./types/index.d.ts"
+    }
+  }
 }
