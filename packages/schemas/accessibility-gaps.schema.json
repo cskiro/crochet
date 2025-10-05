@@ -1,0 +1,299 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://heisenberg.local/schemas/accessibility-gaps.schema.json",
+  "title": "Accessibility Gaps Report Schema",
+  "description": "Schema for WCAG 2.2 Level AA accessibility audit reports",
+  "type": "object",
+  "required": ["meta", "summary", "findings"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "meta": {
+      "type": "object",
+      "required": [
+        "project",
+        "auditDate",
+        "auditor",
+        "protocolVersion",
+        "wcagVersion",
+        "wcagLevel",
+        "detectionMethod"
+      ],
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Project name"
+        },
+        "auditDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Date of audit (YYYY-MM-DD)"
+        },
+        "auditor": {
+          "type": "string",
+          "description": "Person or tool that performed the audit"
+        },
+        "protocolVersion": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Audit protocol version (semver)"
+        },
+        "wcagVersion": {
+          "type": "string",
+          "enum": ["2.0", "2.1", "2.2"],
+          "description": "WCAG version used for audit"
+        },
+        "wcagLevel": {
+          "type": "string",
+          "enum": ["A", "AA", "AAA"],
+          "description": "Target WCAG conformance level"
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Known limitations of the audit"
+        },
+        "detectionMethod": {
+          "type": "string",
+          "enum": [
+            "manual-code-review",
+            "automated-static",
+            "automated-runtime",
+            "automated-e2e",
+            "combined"
+          ],
+          "description": "Primary method used to detect issues"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["totalCriteria", "passing", "failing", "notApplicable", "compliancePercentage"],
+      "properties": {
+        "totalCriteria": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total WCAG criteria evaluated"
+        },
+        "passing": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of passing criteria"
+        },
+        "failing": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of failing criteria"
+        },
+        "notApplicable": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of N/A criteria"
+        },
+        "compliancePercentage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Compliance percentage (passing / applicable)"
+        },
+        "note": {
+          "type": "string",
+          "description": "Additional context for summary"
+        },
+        "severityBreakdown": {
+          "type": "object",
+          "properties": {
+            "critical": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "high": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "medium": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "low": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "criterion",
+          "criterionName",
+          "wcagLevel",
+          "status",
+          "severity",
+          "description",
+          "affectedFiles",
+          "evidence",
+          "wcagReference",
+          "remediation"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^WCAG-\\d+\\.\\d+\\.\\d+-\\d+$",
+            "description": "Unique finding ID (WCAG-{criterion}-{sequence})"
+          },
+          "criterion": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$",
+            "description": "WCAG success criterion number"
+          },
+          "criterionName": {
+            "type": "string",
+            "description": "Human-readable criterion name"
+          },
+          "wcagLevel": {
+            "type": "string",
+            "enum": ["A", "AA", "AAA"],
+            "description": "WCAG level for this criterion"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pass", "fail", "manual-required"],
+            "description": "Finding status"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low"],
+            "description": "Impact severity"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description of the issue"
+          },
+          "affectedFiles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of affected files with line numbers"
+          },
+          "evidence": {
+            "type": "object",
+            "required": ["detectionMethod"],
+            "properties": {
+              "codeSnippet": {
+                "type": "string",
+                "description": "Code snippet showing the issue"
+              },
+              "lineNumbers": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                },
+                "description": "Affected line numbers"
+              },
+              "detectionMethod": {
+                "type": "string",
+                "enum": ["manual", "eslint", "axe", "playwright", "other"],
+                "description": "How the issue was detected"
+              },
+              "screenshot": {
+                "type": "string",
+                "description": "Path to screenshot evidence"
+              }
+            }
+          },
+          "impact": {
+            "type": "string",
+            "description": "User impact description"
+          },
+          "likelihood": {
+            "type": "string",
+            "description": "Likelihood of users encountering this"
+          },
+          "severityJustification": {
+            "type": "string",
+            "description": "Explanation of severity rating"
+          },
+          "wcagReference": {
+            "type": "string",
+            "format": "uri",
+            "description": "Link to WCAG documentation"
+          },
+          "remediation": {
+            "type": "object",
+            "required": ["description", "estimatedEffort"],
+            "properties": {
+              "description": {
+                "type": "string",
+                "description": "How to fix the issue"
+              },
+              "codeExample": {
+                "type": "string",
+                "description": "Example code showing the fix"
+              },
+              "estimatedEffort": {
+                "type": "string",
+                "description": "Estimated time to fix"
+              }
+            }
+          }
+        }
+      }
+    },
+    "notApplicableCriteria": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "reason"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "WCAG criterion number"
+          },
+          "name": {
+            "type": "string",
+            "description": "Criterion name"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Why this criterion is N/A"
+          }
+        }
+      }
+    },
+    "passingCriteria": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "reason"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "WCAG criterion number"
+          },
+          "name": {
+            "type": "string",
+            "description": "Criterion name"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Why/how this criterion passes"
+          }
+        }
+      }
+    },
+    "additionalNotes": {
+      "type": "object",
+      "description": "Additional context and recommendations"
+    }
+  }
+}

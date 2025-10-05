@@ -1,0 +1,13 @@
+{
+  "name": "@crochet/schemas",
+  "version": "0.0.0",
+  "description": "JSON Schemas for Crochet accessibility audit outputs",
+  "type": "module",
+  "files": [
+    "*.schema.json",
+    "wcag-rule-registry.yaml"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,250 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/connor/heisenberg/schemas/contrast-validation.schema.json",
+  "title": "WCAG Contrast Validation Report",
+  "description": "Schema for documenting color contrast validation against WCAG 2.2 standards",
+  "type": "object",
+  "required": [
+    "validationDate",
+    "wcagTarget",
+    "complianceLevel",
+    "methodology",
+    "colors",
+    "summary"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "validationDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Date validation was performed (YYYY-MM-DD)"
+    },
+    "wcagTarget": {
+      "type": "string",
+      "enum": [
+        "2.0",
+        "2.1",
+        "2.2"
+      ],
+      "description": "WCAG version targeted"
+    },
+    "complianceLevel": {
+      "type": "string",
+      "enum": [
+        "A",
+        "AA",
+        "AAA"
+      ],
+      "description": "Target WCAG compliance level"
+    },
+    "methodology": {
+      "type": "string",
+      "description": "Method used to calculate contrast ratios"
+    },
+    "validator": {
+      "type": "string",
+      "description": "Tool or process used for validation"
+    },
+    "colors": {
+      "type": "array",
+      "description": "List of color combinations validated",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "foreground",
+          "background",
+          "contrastRatio",
+          "wcagCompliance",
+          "status"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Descriptive name for the color combination"
+          },
+          "foreground": {
+            "type": "string",
+            "pattern": "^(#[0-9A-Fa-f]{6}|rgba?\\([^)]+\\))$",
+            "description": "Foreground color (hex or rgba)"
+          },
+          "background": {
+            "type": "string",
+            "pattern": "^(#[0-9A-Fa-f]{6}|rgba?\\([^)]+\\))$",
+            "description": "Background color (hex or rgba)"
+          },
+          "contrastRatio": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 21,
+            "description": "Calculated contrast ratio (1:1 to 21:1)"
+          },
+          "useCases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Where this color combination is used"
+          },
+          "wcagCompliance": {
+            "type": "object",
+            "required": [
+              "aa",
+              "aaa"
+            ],
+            "properties": {
+              "aa": {
+                "type": "object",
+                "required": [
+                  "normalText",
+                  "largeText"
+                ],
+                "properties": {
+                  "normalText": {
+                    "type": "boolean",
+                    "description": "Meets AA for normal text (4.5:1)"
+                  },
+                  "largeText": {
+                    "type": "boolean",
+                    "description": "Meets AA for large text (3:1)"
+                  }
+                }
+              },
+              "aaa": {
+                "type": "object",
+                "required": [
+                  "normalText",
+                  "largeText"
+                ],
+                "properties": {
+                  "normalText": {
+                    "type": "boolean",
+                    "description": "Meets AAA for normal text (7:1)"
+                  },
+                  "largeText": {
+                    "type": "boolean",
+                    "description": "Meets AAA for large text (4.5:1)"
+                  }
+                }
+              }
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "fail"
+            ],
+            "description": "Overall pass/fail for target compliance level"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Additional notes or context"
+          }
+        }
+      }
+    },
+    "components": {
+      "type": "array",
+      "description": "Component-specific contrast validations",
+      "items": {
+        "type": "object",
+        "required": [
+          "component",
+          "textColor",
+          "backgroundColor",
+          "contrastRatio",
+          "status"
+        ],
+        "properties": {
+          "component": {
+            "type": "string",
+            "description": "Component name"
+          },
+          "textColor": {
+            "type": "string",
+            "description": "Text color used"
+          },
+          "backgroundColor": {
+            "type": "string",
+            "description": "Background color used"
+          },
+          "contrastRatio": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 21
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "fail"
+            ]
+          },
+          "complianceLevel": {
+            "type": "string",
+            "enum": [
+              "A",
+              "AA",
+              "AAA"
+            ]
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "totalColorsValidated",
+        "aaCompliant",
+        "violations",
+        "status"
+      ],
+      "properties": {
+        "totalColorsValidated": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of color combinations tested"
+        },
+        "aaCompliant": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number meeting AA standards"
+        },
+        "aaaCompliant": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number meeting AAA standards"
+        },
+        "violations": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of combinations failing target level"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "fail"
+          ],
+          "description": "Overall validation status"
+        }
+      }
+    },
+    "manualVerificationUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL for manual verification (e.g., WebAIM)"
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Reference URLs and file paths"
+    }
+  }
+}
