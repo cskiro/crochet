@@ -6,6 +6,7 @@ export default tseslint.config(
   {
     ignores: [
       'dist',
+      'packages/**/dist/**/*',
       'coverage',
       'reports',
       'node_modules',

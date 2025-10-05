@@ -1,6 +1,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import Ajv, { ErrorObject } from 'ajv';
+import Ajv from 'ajv';
+import type { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
 import accessibilityGapsSchema from '@crochet/schemas/accessibility-gaps.schema.json' assert { type: 'json' };
 import contrastValidationSchema from '@crochet/schemas/contrast-validation.schema.json' assert { type: 'json' };

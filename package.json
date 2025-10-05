@@ -17,7 +17,8 @@
     "schema:types": "node scripts/generate-schema-types.mjs",
     "schema:validate": "node scripts/validate-schemas.mjs",
     "cli:build": "pnpm --filter @crochet/cli build",
-    "cli:dev": "pnpm --filter @crochet/cli dev"
+    "cli:dev": "pnpm --filter @crochet/cli dev",
+    "crochet": "node packages/cli/dist/index.js"
   },
   "engines": {
     "node": ">=20.0.0"
