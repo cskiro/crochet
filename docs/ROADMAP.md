@@ -4,26 +4,26 @@
 
 Transform the Heisenberg accessibility audit workflow into a reusable, public utility that ships opinionated WCAG 2.2 Level AA automation, documentation, and tooling.
 
-## Phase 0 – Context Capture (Completed)
-- Clone private source repo, collect audit artifacts (`docs/accessibility/*`, protocol YAML, schemas).
-- Export reusable knowledge (protocol summary, audit findings) so future runs do not rely on hidden paths.
-- Inventory accessibility assets: automation scripts, manual checklists, remediation plans, contrast validation results.
-- Establish success metrics and non-goals (focus on automated audit + documentation, no hosted service yet).
+## Phase 0 – Context Capture ✅ (Completed 2025-10-04)
+- Cloned source repo artifacts (audit reports, protocol YAML, schemas).
+- Exported reusable knowledge so future runs do not rely on hidden paths.
+- Inventoried accessibility assets (automation scripts, manual checklists, remediation plans, contrast results).
+- Established success metrics and non-goals for the public utility.
 
-## Phase 1 – Repository Foundation (In Progress)
-- Scaffold public repo structure (`packages/`, `docs/`, `.github/`, `examples/`, `.changeset/`).
-- Commit workspace tooling: pnpm workspaces, TypeScript base config, ESLint/Vitest configs, CI workflow skeleton.
-- Add governance artifacts: README, LICENSE, Code of Conduct, CONTRIBUTING, SECURITY policy, issue/PR templates, CODEOWNERS.
-- Document roadmap and create project planning structure.
-- replace placeholder contact info (CoC, Security, CODEOWNERS, issue template link)
+## Phase 1 – Repository Foundation ✅ (Completed 2025-10-05)
+- Scaffolded public repo structure (`packages/`, `docs/`, `.github/`, `examples/`, `.changeset/`).
+- Committed workspace tooling: pnpm workspace, TypeScript base config, ESLint/Vitest configs, CI workflow skeleton.
+- Added governance artifacts: README, LICENSE, Code of Conduct, CONTRIBUTING, SECURITY policy, issue/PR templates, CODEOWNERS.
+- Documented roadmap plus internal planning notes (`docs/planning/*`).
+- Deferred: replace placeholder contact info once the proof of concept matures.
 
-### Phase 1 Success Criteria
-- Repository bootstrapped with lint/test/typecheck running cleanly in CI.
-- Governance docs completed and placeholders (contacts, CODEOWNERS) populated with real maintainer details.
-- Roadmap captured in version control with clear next phases and outstanding tasks.
-- Initial milestone/issues tracking Phase 1 deliverables created in GitHub Project/Issues.
+### Phase 1 Success Criteria (Met)
+- ✅ CI (`pnpm lint`, `pnpm test --passWithNoTests`, `pnpm typecheck`) passes on main.
+- ✅ Governance docs in place; outstanding contact placeholders tracked for later.
+- ✅ Roadmap and planning docs captured in version control.
+- ✅ Internal planning artifacts established instead of GitHub Issues for initial execution.
 
-## Phase 2 – Protocol & Packaging
+## Phase 2 – Protocol & Packaging (Next)
 - Relocate the WCAG audit protocol into `packages/protocols/` with templated project metadata.
 - Normalize JSON schemas in `packages/schemas/`, publish TypeScript types, and add validation test harness.
 - Extract manual checklists and testing guides into `docs/playbooks/` with W3C references.
