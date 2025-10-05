@@ -1,0 +1,346 @@
+# WCAG 2.2 Level AA Rule Registry
+# Heisenberg Project Accessibility Standards
+#
+# This registry defines WCAG rules applicable to the Heisenberg RxNav search application.
+# Rules are categorized by principle and include detection methods and tooling.
+
+version: '1.0.0'
+wcagVersion: '2.2'
+targetLevel: 'AA'
+project: 'Heisenberg - RxNav Drug Search'
+
+principles:
+  perceivable:
+    name: 'Perceivable'
+    description: 'Information and user interface components must be presentable to users in ways they can perceive'
+    guidelines:
+      - guideline: '1.1'
+        name: 'Text Alternatives'
+        criteria:
+          - id: '1.1.1'
+            name: 'Non-text Content'
+            level: 'A'
+            detectionMethods: ['eslint-jsx-a11y', 'axe-core']
+            eslintRules: ['jsx-a11y/alt-text', 'jsx-a11y/aria-hidden']
+            testStrategy: 'Static + Runtime'
+
+      - guideline: '1.3'
+        name: 'Adaptable'
+        criteria:
+          - id: '1.3.1'
+            name: 'Info and Relationships'
+            level: 'A'
+            detectionMethods: ['eslint-jsx-a11y', 'axe-core']
+            eslintRules: ['jsx-a11y/label-has-associated-control', 'jsx-a11y/heading-has-content']
+            testStrategy: 'Static + Runtime'
+
+          - id: '1.3.2'
+            name: 'Meaningful Sequence'
+            level: 'A'
+            detectionMethods: ['manual', 'axe-core']
+            testStrategy: 'Manual + E2E'
+
+          - id: '1.3.3'
+            name: 'Sensory Characteristics'
+            level: 'A'
+            detectionMethods: ['manual']
+            testStrategy: 'Manual Review'
+
+          - id: '1.3.4'
+            name: 'Orientation'
+            level: 'AA'
+            detectionMethods: ['manual', 'playwright']
+            testStrategy: 'E2E Viewport Testing'
+
+          - id: '1.3.5'
+            name: 'Identify Input Purpose'
+            level: 'AA'
+            detectionMethods: ['eslint-jsx-a11y']
+            eslintRules: ['jsx-a11y/autocomplete-valid']
+            testStrategy: 'Static'
+            applicability: 'Only for user profile inputs (Section 7 purposes)'
+
+      - guideline: '1.4'
+        name: 'Distinguishable'
+        criteria:
+          - id: '1.4.1'
+            name: 'Use of Color'
+            level: 'A'
+            detectionMethods: ['manual', 'axe-core']
+            testStrategy: 'Manual + Runtime'
+
+          - id: '1.4.2'
+            name: 'Audio Control'
+            level: 'A'
+            detectionMethods: ['manual']
+            testStrategy: 'Manual Review'
+            applicability: 'Only if auto-playing audio exists'
+
+          - id: '1.4.3'
+            name: 'Contrast (Minimum)'
+            level: 'AA'
+            detectionMethods: ['manual', 'axe-core']
+            tools: ['WebAIM Contrast Checker']
+            testStrategy: 'Manual WebAIM + Runtime Axe'
+            requirements:
+              normalText: '4.5:1'
+              largeText: '3:1'
+              uiComponents: '3:1'
+
+  operable:
+    name: 'Operable'
+    description: 'User interface components and navigation must be operable'
+    guidelines:
+      - guideline: '2.1'
+        name: 'Keyboard Accessible'
+        criteria:
+          - id: '2.1.1'
+            name: 'Keyboard'
+            level: 'A'
+            detectionMethods: ['eslint-jsx-a11y', 'manual', 'playwright']
+            eslintRules:
+              ['jsx-a11y/click-events-have-key-events', 'jsx-a11y/no-static-element-interactions']
+            testStrategy: 'Static + Manual + E2E'
+
+          - id: '2.1.2'
+            name: 'No Keyboard Trap'
+            level: 'A'
+            detectionMethods: ['manual', 'playwright']
+            testStrategy: 'Manual + E2E'
+
+          - id: '2.1.4'
+            name: 'Character Key Shortcuts'
+            level: 'A'
+            detectionMethods: ['manual']
+            testStrategy: 'Manual Review'
+
+      - guideline: '2.4'
+        name: 'Navigable'
+        criteria:
+          - id: '2.4.1'
+            name: 'Bypass Blocks'
+            level: 'A'
+            detectionMethods: ['manual', 'axe-core']
+            testStrategy: 'Manual + Runtime'
+            implementation: 'Skip navigation link required'
+
+          - id: '2.4.2'
+            name: 'Page Titled'
+            level: 'A'
+            detectionMethods: ['eslint-jsx-a11y', 'axe-core']
+            eslintRules: ['jsx-a11y/html-has-lang']
+            testStrategy: 'Static + Runtime'
+
+          - id: '2.4.3'
+            name: 'Focus Order'
+            level: 'A'
+            detectionMethods: ['manual', 'playwright']
+            eslintRules: ['jsx-a11y/tabindex-no-positive']
+            testStrategy: 'Manual + E2E'
+
+          - id: '2.4.4'
+            name: 'Link Purpose (In Context)'
+            level: 'A'
+            detectionMethods: ['eslint-jsx-a11y']
+            eslintRules: ['jsx-a11y/anchor-has-content', 'jsx-a11y/anchor-is-valid']
+            testStrategy: 'Static'
+
+          - id: '2.4.5'
+            name: 'Multiple Ways'
+            level: 'AA'
+            detectionMethods: ['manual']
+            testStrategy: 'Manual Review'
+            applicability: 'Only for multi-page sites (N/A for single-function tools)'
+
+          - id: '2.4.6'
+            name: 'Headings and Labels'
+            level: 'AA'
+            detectionMethods: ['eslint-jsx-a11y', 'axe-core']
+            eslintRules: ['jsx-a11y/heading-has-content', 'jsx-a11y/label-has-associated-control']
+            testStrategy: 'Static + Runtime'
+
+          - id: '2.4.7'
+            name: 'Focus Visible'
+            level: 'AA'
+            detectionMethods: ['manual', 'vitest-axe', 'playwright']
+            testStrategy: 'Unit (getComputedStyle) + Manual + E2E'
+            criticalNote: 'ESLint cannot detect outline:none in sx props - requires unit test'
+            unitTestPath: 'src/features/drug-detail/components/__tests__/DrugDetail.outline.spec.tsx'
+
+      - guideline: '2.5'
+        name: 'Input Modalities'
+        criteria:
+          - id: '2.5.1'
+            name: 'Pointer Gestures'
+            level: 'A'
+            detectionMethods: ['manual']
+            testStrategy: 'Manual Review'
+
+          - id: '2.5.2'
+            name: 'Pointer Cancellation'
+            level: 'A'
+            detectionMethods: ['manual']
+            testStrategy: 'Manual Review'
+
+          - id: '2.5.3'
+            name: 'Label in Name'
+            level: 'A'
+            detectionMethods: ['axe-core']
+            testStrategy: 'Runtime'
+
+          - id: '2.5.4'
+            name: 'Motion Actuation'
+            level: 'A'
+            detectionMethods: ['manual']
+            testStrategy: 'Manual Review'
+
+  understandable:
+    name: 'Understandable'
+    description: 'Information and the operation of user interface must be understandable'
+    guidelines:
+      - guideline: '3.1'
+        name: 'Readable'
+        criteria:
+          - id: '3.1.1'
+            name: 'Language of Page'
+            level: 'A'
+            detectionMethods: ['eslint-jsx-a11y', 'axe-core']
+            eslintRules: ['jsx-a11y/html-has-lang', 'jsx-a11y/lang']
+            testStrategy: 'Static + Runtime'
+
+      - guideline: '3.2'
+        name: 'Predictable'
+        criteria:
+          - id: '3.2.1'
+            name: 'On Focus'
+            level: 'A'
+            detectionMethods: ['manual']
+            testStrategy: 'Manual Review'
+
+          - id: '3.2.2'
+            name: 'On Input'
+            level: 'A'
+            detectionMethods: ['manual']
+            testStrategy: 'Manual Review'
+
+          - id: '3.2.3'
+            name: 'Consistent Navigation'
+            level: 'AA'
+            detectionMethods: ['manual']
+            testStrategy: 'Manual Review'
+
+          - id: '3.2.4'
+            name: 'Consistent Identification'
+            level: 'AA'
+            detectionMethods: ['manual']
+            testStrategy: 'Manual Review'
+
+          - id: '3.2.6'
+            name: 'Consistent Help'
+            level: 'A'
+            detectionMethods: ['manual']
+            testStrategy: 'Manual Review'
+            applicability: 'Only fails if help exists but is inconsistently placed'
+
+      - guideline: '3.3'
+        name: 'Input Assistance'
+        criteria:
+          - id: '3.3.1'
+            name: 'Error Identification'
+            level: 'A'
+            detectionMethods: ['eslint-jsx-a11y', 'axe-core']
+            eslintRules: ['jsx-a11y/role-has-required-aria-props']
+            testStrategy: 'Static + Runtime'
+
+          - id: '3.3.2'
+            name: 'Labels or Instructions'
+            level: 'A'
+            detectionMethods: ['eslint-jsx-a11y', 'axe-core']
+            eslintRules: ['jsx-a11y/label-has-associated-control']
+            testStrategy: 'Static + Runtime'
+
+          - id: '3.3.3'
+            name: 'Error Suggestion'
+            level: 'AA'
+            detectionMethods: ['manual']
+            testStrategy: 'Manual Review'
+
+          - id: '3.3.7'
+            name: 'Redundant Entry'
+            level: 'A'
+            detectionMethods: ['manual']
+            testStrategy: 'Manual Review'
+
+          - id: '3.3.8'
+            name: 'Accessible Authentication (Minimum)'
+            level: 'AA'
+            detectionMethods: ['manual']
+            testStrategy: 'Manual Review'
+            applicability: 'Only if authentication exists'
+
+  robust:
+    name: 'Robust'
+    description: 'Content must be robust enough that it can be interpreted by a wide variety of user agents'
+    guidelines:
+      - guideline: '4.1'
+        name: 'Compatible'
+        criteria:
+          - id: '4.1.1'
+            name: 'Parsing'
+            level: 'A'
+            detectionMethods: ['obsolete']
+            testStrategy: 'N/A'
+            note: 'Obsolete in WCAG 2.2'
+
+          - id: '4.1.2'
+            name: 'Name, Role, Value'
+            level: 'A'
+            detectionMethods: ['eslint-jsx-a11y', 'axe-core']
+            eslintRules:
+              - 'jsx-a11y/aria-props'
+              - 'jsx-a11y/aria-proptypes'
+              - 'jsx-a11y/aria-role'
+              - 'jsx-a11y/role-has-required-aria-props'
+              - 'jsx-a11y/role-supports-aria-props'
+            testStrategy: 'Static + Runtime'
+
+          - id: '4.1.3'
+            name: 'Status Messages'
+            level: 'AA'
+            detectionMethods: ['eslint-jsx-a11y', 'axe-core']
+            eslintRules: ['jsx-a11y/aria-live']
+            testStrategy: 'Static + Runtime'
+
+# Testing Strategy Summary
+testingPyramid:
+  static:
+    tool: 'eslint-plugin-jsx-a11y'
+    coverage: '~30% of rules'
+    strengths: ['Fast', 'Pre-commit detection', 'Zero runtime cost']
+    limitations: ['Cannot detect CSS-in-JS violations', 'No runtime context']
+
+  unit:
+    tool: 'vitest-axe'
+    coverage: 'Component-level runtime violations'
+    strengths: ['Tests actual rendered output', 'Fast execution', 'Catches CSS violations']
+    limitations: ['Limited to component scope', 'No user interaction']
+    customTests:
+      - path: 'src/features/drug-detail/components/__tests__/DrugDetail.outline.spec.tsx'
+        purpose: 'Detect outline:none in sx props (ESLint blind spot)'
+
+  e2e:
+    tool: '@axe-core/playwright'
+    coverage: 'Full application runtime violations'
+    strengths:
+      ['Tests complete user flows', 'Validates keyboard navigation', 'Real browser context']
+    limitations: ['Slower execution', 'More complex setup']
+
+# MUI Framework Considerations
+muiDefaults:
+  accessibility:
+    - "SvgIcon automatically adds aria-hidden='true'"
+    - "Alert defaults to role='alert'"
+    - 'Button default height 36.5px meets 24x24px minimum'
+    - 'TextField automatically associates labels'
+  knownIssues:
+    - 'sx prop values not analyzed by ESLint (requires runtime testing)'

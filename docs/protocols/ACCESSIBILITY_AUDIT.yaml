@@ -1,0 +1,1199 @@
+# WCAG 2.2 Accessibility Audit Protocol v2.0.0
+# LLM-friendly protocol for automated accessibility compliance auditing
+#
+# CRITICAL CHANGES FROM v1.0.0:
+# - Removed grep-based automation (caused false positives/negatives)
+# - Added tool-based detection requirements (ESLint, jest-axe, Playwright)
+# - Severity now based on impact × likelihood, NOT WCAG level
+# - Added JSON schema for machine-readable outputs
+# - Corrected WCAG misinterpretations (1.3.5, 1.4.4, 2.4.5, 2.5.8, 3.2.6, 4.1.3)
+# - Added MUI framework awareness
+# - Added applicability conditions for context-dependent criteria
+
+protocol_metadata:
+  name: "WCAG 2.2 Accessibility Audit Protocol"
+  version: "2.0.0"
+  protocol_created: "2025-10-04"
+  protocol_last_updated: "2025-10-04"
+  changelog_url: "docs/protocols/CHANGELOG.md"
+
+  target_standard:
+    name: "WCAG 2.2"
+    level: "AA"
+    published: "2023-10-05"
+    reference_url: "https://www.w3.org/TR/WCAG22/"
+    quick_ref_url: "https://www.w3.org/WAI/WCAG22/quickref/"
+
+  breaking_changes_from_v1:
+    - "Removed automated_scan_queries section (grep-based, unreliable)"
+    - "Severity mapping changed from WCAG level to risk-based rubric"
+    - "Added required_tooling section for AST/runtime analysis"
+    - "Gap reports now require JSON schema compliance"
+    - "Corrected 6 WCAG criterion interpretations"
+
+# ========== SEVERITY RUBRIC ==========
+# CRITICAL: Severity is based on IMPACT × LIKELIHOOD, not WCAG conformance level
+# Level A vs AA is a conformance tier, not a risk rating
+
+severity_rubric:
+  definition: "Risk-based scoring: Impact (how severe when it occurs) × Likelihood (how often users encounter it)"
+
+  critical:
+    description: "Completely blocks access for users with disabilities"
+    impact: "Prevents task completion"
+    examples:
+      - "Keyboard trap preventing navigation (2.1.2, Level A)"
+      - "Missing alt text on primary action image (1.1.1, Level A)"
+      - "Form submission inaccessible via keyboard (2.1.1, Level A)"
+      - "Focus outline removed from focusable elements (2.4.7, Level AA)"
+    note: "Can be Level A OR Level AA criteria"
+
+  high:
+    description: "Significantly degrades experience or blocks common workflows"
+    impact: "Makes tasks difficult or requires workarounds"
+    examples:
+      - "No skip navigation on complex site (2.4.1, Level A)"
+      - "Poor contrast on primary CTA button (1.4.3, Level AA)"
+      - "Missing error suggestions on required form (3.3.3, Level AA)"
+      - "Touch targets too small on mobile (2.5.8, Level AA)"
+    note: "Can be Level A OR Level AA criteria"
+
+  medium:
+    description: "Minor usability impact, affects subset of users"
+    impact: "Causes confusion or requires extra effort"
+    examples:
+      - "Decorative icon not hidden but in acceptable context (1.1.1, Level A)"
+      - "Link text needs slight improvement for clarity (2.4.4, Level A)"
+      - "Missing autocomplete on optional field (1.3.5, Level AA)"
+    note: "Can be Level A OR Level AA criteria"
+
+  low:
+    description: "Best practice enhancement, minimal user impact"
+    impact: "Nice-to-have improvement"
+    examples:
+      - "Could add tooltips for better UX (not required)"
+      - "Page title could be more descriptive (2.4.2, Level A - but functional)"
+    note: "Often still WCAG failures, but low business risk"
+
+  calculation_guidance: |
+    Severity = Impact × Likelihood
+
+    Impact (how bad):
+      - Blocker: Prevents access = Critical/High
+      - Degraded: Makes difficult = High/Medium
+      - Friction: Adds effort = Medium/Low
+      - Minor: Barely noticeable = Low
+
+    Likelihood (how often):
+      - Core flow: All users hit it = Increase severity
+      - Common: Many users hit it = Base severity
+      - Edge case: Few users hit it = Decrease severity
+      - Rare: Almost never encountered = Low
+
+    Example:
+      - Missing alt on hero image (Impact: Blocker, Likelihood: All users) = CRITICAL
+      - Missing alt on decorative footer icon (Impact: Minor, Likelihood: Rare) = LOW
+
+# ========== REQUIRED TOOLING ==========
+# These tools are REQUIRED for accurate automated detection
+# Grep/regex-based scanning is PROHIBITED due to high false positive/negative rates
+
+required_tooling:
+  static_analysis:
+    required:
+      - tool: "eslint-plugin-jsx-a11y"
+        version: ">=6.8.0"
+        purpose: "Detect JSX accessibility issues via AST"
+        install: "npm install --save-dev eslint-plugin-jsx-a11y"
+        config: "Extend 'plugin:jsx-a11y/recommended' in .eslintrc"
+        detects:
+          - "Missing alt text"
+          - "Invalid ARIA attributes"
+          - "Interactive elements without keyboard support"
+          - "Improper heading hierarchy"
+        limitations:
+          - "Cannot check runtime props or dynamic values"
+          - "Cannot calculate color contrast"
+          - "Cannot detect focus order issues"
+
+      - tool: "TypeScript Compiler API"
+        purpose: "AST traversal for complex pattern detection"
+        use_case: "Custom rules for framework-specific patterns"
+        example: "Detect MUI components and their built-in a11y features"
+
+    optional:
+      - tool: "@typescript-eslint/parser"
+        purpose: "Parse TypeScript for ESLint"
+      - tool: "eslint-plugin-react"
+        purpose: "React-specific linting"
+
+  runtime_analysis:
+    required:
+      - tool: "jest-axe"
+        version: ">=8.0.0"
+        purpose: "Automated accessibility testing in component tests"
+        install: "npm install --save-dev jest-axe @axe-core/react"
+        usage: |
+          import { axe, toHaveNoViolations } from 'jest-axe';
+          expect.extend(toHaveNoViolations);
+
+          test('has no a11y violations', async () => {
+            const { container } = render(<Component />);
+            expect(await axe(container)).toHaveNoViolations();
+          });
+        detects:
+          - "Rendered accessibility violations"
+          - "ARIA attribute values"
+          - "Color contrast (basic)"
+          - "Form labels"
+        limitations:
+          - "Cannot detect keyboard flow"
+          - "Cannot detect focus management"
+          - "Limited to single component scope"
+
+      - tool: "@axe-core/playwright"
+        version: ">=4.8.0"
+        purpose: "E2E accessibility testing"
+        install: "npm install --save-dev @axe-core/playwright"
+        usage: |
+          import { injectAxe, checkA11y } from '@axe-core/playwright';
+
+          test('page is accessible', async ({ page }) => {
+            await injectAxe(page);
+            await checkA11y(page);
+          });
+        detects:
+          - "Full-page accessibility issues"
+          - "Color contrast (accurate)"
+          - "Focus order"
+          - "Keyboard navigation"
+        limitations:
+          - "Slower than unit tests"
+          - "Requires full app running"
+
+    recommended:
+      - tool: "@storybook/addon-a11y"
+        purpose: "Visual accessibility testing during development"
+      - tool: "pa11y-ci"
+        purpose: "CI/CD accessibility checks"
+
+  manual_validation:
+    required: |
+      The following CANNOT be automated and require human judgment:
+
+      1. Color Contrast Validation:
+         - Tool: WebAIM Contrast Checker (https://webaim.org/resources/contrastchecker/)
+         - Check: All text and UI components against background
+         - Requirement: 4.5:1 for normal text, 3:1 for large text/UI
+
+      2. Keyboard Navigation Testing:
+         - Test: Tab through all interactive elements
+         - Check: Logical order, no traps, all functionality accessible
+         - Test: Shift+Tab, Enter, Space, Escape, Arrow keys
+
+      3. Screen Reader Testing:
+         - Tools: NVDA (Windows), JAWS (Windows), VoiceOver (Mac/iOS)
+         - Test: Navigate with SR, verify announcements
+         - Check: Landmarks, headings, form labels, status messages
+
+      4. Zoom and Reflow Testing:
+         - Test: Zoom to 200%, verify no horizontal scroll
+         - Test: Resize to 320px width, verify content reflows
+         - Check: No content loss, no overlapping
+
+      5. WCAG Interpretation:
+         - Many criteria require human judgment
+         - Context matters: Is this a single-page app? Does help exist?
+         - Exceptions apply: Target size, contrast, timing
+
+  framework_awareness:
+    mui:
+      built_in_accessibility: |
+        MUI components have built-in accessibility features.
+        Audit rules MUST account for framework defaults to avoid false positives.
+
+      defaults:
+        SvgIcon:
+          behavior: "Automatically adds aria-hidden='true' when titleAccess prop is undefined"
+          source: "node_modules/@mui/material/SvgIcon/SvgIcon.js"
+          rule: "Do NOT flag MUI icons as missing aria-hidden unless titleAccess is set"
+          check: |
+            // Only flag if:
+            <SvgIcon titleAccess="Icon name" /> // This SHOULD have aria-label or be visible
+
+            // Do NOT flag:
+            <SearchIcon /> // Auto aria-hidden
+            <Timeline /> // Auto aria-hidden
+
+        Alert:
+          behavior: "Defaults to role='alert' (assertive live region)"
+          rule: "Do NOT recommend adding role='alert' - it's already there"
+          check: "Only suggest role='status' if polite announcement is more appropriate"
+
+        Button:
+          behavior: "Has minimum 36.5px height by default"
+          rule: "Usually meets 24x24px target size requirement"
+          check: "Only flag if size='small' or custom sx reduces below 24px"
+
+        TextField:
+          behavior: "Automatically associates label with input via id"
+          rule: "Do NOT flag as missing label if label prop is provided"
+
+        Autocomplete:
+          behavior: "Manages aria-expanded, aria-controls, aria-activedescendant"
+          rule: "Do NOT flag ARIA attributes - they're managed by component"
+
+# ========== JSON SCHEMA FOR OUTPUTS ==========
+
+output_schema:
+  gap_report:
+    version: "2.0.0"
+    file_format: "JSON"
+    file_name_pattern: "accessibility-gaps-YYYY-MM-DD.json"
+
+    schema: |
+      {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "required": ["meta", "summary", "findings"],
+        "properties": {
+          "meta": {
+            "type": "object",
+            "required": ["project", "auditDate", "auditor", "protocolVersion", "wcagVersion"],
+            "properties": {
+              "project": { "type": "string" },
+              "auditDate": { "type": "string", "format": "date" },
+              "auditor": { "type": "string" },
+              "protocolVersion": { "type": "string" },
+              "wcagVersion": { "type": "string" },
+              "wcagLevel": { "type": "string", "enum": ["A", "AA", "AAA"] }
+            }
+          },
+          "summary": {
+            "type": "object",
+            "required": ["totalCriteria", "passing", "failing", "notApplicable", "compliancePercentage"],
+            "properties": {
+              "totalCriteria": { "type": "integer" },
+              "passing": { "type": "integer" },
+              "failing": { "type": "integer" },
+              "notApplicable": { "type": "integer" },
+              "compliancePercentage": { "type": "number" },
+              "severityBreakdown": {
+                "type": "object",
+                "properties": {
+                  "critical": { "type": "integer" },
+                  "high": { "type": "integer" },
+                  "medium": { "type": "integer" },
+                  "low": { "type": "integer" }
+                }
+              }
+            }
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "criterion", "wcagLevel", "status", "severity"],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^WCAG-[0-9]\\.[0-9]\\.[0-9]+-[0-9]{3}$",
+                  "description": "Unique ID: WCAG-{criterion}-{sequence}"
+                },
+                "criterion": {
+                  "type": "string",
+                  "pattern": "^[1-4]\\.[0-9]\\.[0-9]+$"
+                },
+                "criterionName": { "type": "string" },
+                "wcagLevel": { "type": "string", "enum": ["A", "AA", "AAA"] },
+                "status": {
+                  "type": "string",
+                  "enum": ["pass", "fail", "na", "manual-required"]
+                },
+                "severity": {
+                  "type": "string",
+                  "enum": ["critical", "high", "medium", "low", "n/a"]
+                },
+                "description": { "type": "string" },
+                "affectedFiles": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "evidence": {
+                  "type": "object",
+                  "properties": {
+                    "codeSnippet": { "type": "string" },
+                    "lineNumbers": { "type": "array", "items": { "type": "integer" } },
+                    "detectionMethod": { "type": "string", "enum": ["eslint", "jest-axe", "playwright", "manual"] }
+                  }
+                },
+                "wcagReference": { "type": "string", "format": "uri" },
+                "remediation": {
+                  "type": "object",
+                  "properties": {
+                    "description": { "type": "string" },
+                    "codeExample": { "type": "string" },
+                    "estimatedEffort": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+  remediation_plan:
+    version: "2.0.0"
+    file_format: "JSON"
+    file_name_pattern: "accessibility-remediation-YYYY-MM-DD.json"
+
+    schema: |
+      {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "required": ["meta", "tasks"],
+        "properties": {
+          "meta": {
+            "type": "object",
+            "properties": {
+              "project": { "type": "string" },
+              "createdDate": { "type": "string", "format": "date" },
+              "totalTasks": { "type": "integer" },
+              "estimatedHours": { "type": "number" }
+            }
+          },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["taskId", "findingId", "priority", "title", "status"],
+              "properties": {
+                "taskId": { "type": "string", "pattern": "^TASK-[0-9]{3}$" },
+                "findingId": { "type": "string", "pattern": "^WCAG-[0-9]\\.[0-9]\\.[0-9]+-[0-9]{3}$" },
+                "priority": { "type": "integer", "minimum": 1 },
+                "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+                "title": { "type": "string" },
+                "description": { "type": "string" },
+                "status": { "type": "string", "enum": ["pending", "in-progress", "completed", "blocked"] },
+                "affectedFiles": { "type": "array", "items": { "type": "string" } },
+                "steps": { "type": "array", "items": { "type": "string" } },
+                "codeExample": { "type": "string" },
+                "testingCriteria": { "type": "array", "items": { "type": "string" } },
+                "estimatedHours": { "type": "number" },
+                "assignee": { "type": "string" },
+                "wcagReference": { "type": "string", "format": "uri" }
+              }
+            }
+          }
+        }
+      }
+
+# ========== EXECUTION PROTOCOL ==========
+
+execution_steps:
+  step_1_preparation:
+    action: "Setup tooling and environment"
+    tasks:
+      - "Verify eslint-plugin-jsx-a11y is installed and configured"
+      - "Verify jest-axe is available for component tests"
+      - "Verify @axe-core/playwright is available for E2E tests"
+      - "Create output directories: docs/accessibility/"
+      - "Prepare gap report JSON file from schema"
+      - "Prepare remediation plan JSON file from schema"
+
+    validation:
+      - "Run: npm list eslint-plugin-jsx-a11y jest-axe"
+      - "Check .eslintrc extends 'plugin:jsx-a11y/recommended'"
+      - "Verify output directory exists"
+
+  step_2_static_analysis:
+    action: "Run ESLint with jsx-a11y plugin"
+    command: "npm run lint -- --format json > eslint-a11y-results.json"
+
+    parse_results:
+      - "Extract jsx-a11y violations from ESLint output"
+      - "Map violations to WCAG criteria (see wcag_criteria section)"
+      - "Apply framework_awareness rules to filter false positives"
+      - "Calculate severity using severity_rubric"
+      - "Add to gap report JSON"
+
+    note: "ESLint detects structural issues but cannot validate runtime state"
+
+  step_3_unit_test_analysis:
+    action: "Run jest-axe on component tests"
+    command: "npm test -- --coverage --json > jest-results.json"
+
+    requirements:
+      - "All components should have .spec.tsx test file with axe check"
+      - "Test must call: expect(await axe(container)).toHaveNoViolations()"
+
+    parse_results:
+      - "Extract axe violations from test output"
+      - "Map violations to WCAG criteria"
+      - "Calculate severity"
+      - "Add to gap report JSON"
+
+    note: "Catches rendered violations ESLint misses (e.g., contrast, aria-invalid)"
+
+  step_4_e2e_analysis:
+    action: "Run Playwright with axe-core"
+    command: "npm run test:e2e -- --reporter=json > playwright-results.json"
+
+    requirements:
+      - "E2E tests should inject axe and run checkA11y(page)"
+      - "Test full user flows, not just individual pages"
+
+    parse_results:
+      - "Extract axe violations from full-page scans"
+      - "Map violations to WCAG criteria"
+      - "Calculate severity based on user flow criticality"
+      - "Add to gap report JSON"
+
+    note: "Catches issues only visible in integrated environment"
+
+  step_5_manual_validation:
+    action: "Perform required manual checks"
+
+    required_checks:
+      color_contrast:
+        - "Extract all colors from theme configuration"
+        - "Calculate contrast ratios using WebAIM Contrast Checker"
+        - "Document results in gap report"
+        - "Flag violations as severity based on element importance"
+
+      keyboard_navigation:
+        - "Tab through all interactive elements"
+        - "Document tab order issues"
+        - "Test all keyboard shortcuts"
+        - "Verify no keyboard traps"
+        - "Document findings in gap report"
+
+      screen_reader:
+        - "Test with VoiceOver (Mac) or NVDA (Windows)"
+        - "Navigate landmarks, headings, forms"
+        - "Verify announcements for dynamic content"
+        - "Document issues in gap report"
+
+      zoom_reflow:
+        - "Test at 200% zoom"
+        - "Test at 320px width"
+        - "Document any content loss or horizontal scroll"
+
+      wcag_interpretation:
+        - "Review context-dependent criteria (2.4.5, 3.2.6, etc.)"
+        - "Apply applicability rules"
+        - "Document decisions in gap report notes"
+
+    output:
+      - "Add manual findings to gap report JSON"
+      - "Mark automated findings as 'manual-required' if validation needed"
+
+  step_6_applicability_filtering:
+    action: "Filter findings based on applicability conditions"
+
+    apply_rules:
+      - "Check criterion applicability_conditions"
+      - "If condition not met, mark status as 'na' (not applicable)"
+      - "Document reason in finding notes"
+
+    examples:
+      - "1.3.5: Only applies to 53 specific input purposes - filter out search inputs"
+      - "2.4.5: Only applies to multi-page sites - check route count"
+      - "3.2.6: Only applies if help mechanism exists - check for help UI"
+      - "4.1.1: Deprecated in WCAG 2.2 - mark as 'na'"
+
+    output: "Updated gap report JSON with applicability status"
+
+  step_7_severity_calculation:
+    action: "Calculate severity using impact × likelihood rubric"
+
+    process:
+      - "For each failing criterion, assess impact (blocker/degraded/friction/minor)"
+      - "Assess likelihood (core-flow/common/edge-case/rare)"
+      - "Apply severity_rubric calculation"
+      - "Override automated severity if needed based on context"
+
+    examples:
+      - "Missing alt on logo: Impact=blocker, Likelihood=all users → CRITICAL"
+      - "Missing alt on decorative footer icon: Impact=minor, Likelihood=rare → LOW"
+      - "No skip link on 3-item nav: Impact=friction, Likelihood=common → MEDIUM"
+      - "No skip link on 50-item nav: Impact=degraded, Likelihood=all users → HIGH"
+
+    output: "Gap report JSON with accurate severity ratings"
+
+  step_8_generate_reports:
+    action: "Output final reports"
+
+    outputs:
+      gap_report_json:
+        path: "docs/accessibility/accessibility-gaps-{date}.json"
+        schema: "output_schema.gap_report"
+        validate: "Validate against JSON schema before writing"
+
+      gap_report_markdown:
+        path: "docs/accessibility/audit-report-{date}.md"
+        content: "Human-readable summary of gap_report_json"
+        include:
+          - "Executive summary with compliance percentage"
+          - "Severity breakdown"
+          - "Findings grouped by principle and criterion"
+          - "Evidence and code snippets"
+          - "WCAG reference links"
+
+      remediation_plan_json:
+        path: "docs/accessibility/accessibility-remediation-{date}.json"
+        schema: "output_schema.remediation_plan"
+        content:
+          - "Tasks sorted by severity (critical → low)"
+          - "Task dependencies identified"
+          - "Estimated effort per task"
+          - "Code examples for fixes"
+
+      remediation_plan_markdown:
+        path: "docs/accessibility/remediation-plan-{date}.md"
+        content: "Human-readable implementation guide"
+        include:
+          - "Prioritized task list"
+          - "Step-by-step instructions"
+          - "Before/after code examples"
+          - "Testing validation steps"
+
+  step_9_validation:
+    action: "Validate audit completeness and accuracy"
+
+    checks:
+      - "All 60 WCAG 2.2 Level AA criteria reviewed"
+      - "Every finding has evidence (file path + detection method)"
+      - "No false positives from MUI defaults"
+      - "Severity ratings are risk-based, not WCAG-level-based"
+      - "JSON outputs validate against schemas"
+      - "Manual validation completed for required checks"
+
+    sign_off:
+      - "LLM confirms all steps executed"
+      - "LLM provides audit confidence level (0-100%)"
+      - "LLM lists any limitations or assumptions"
+
+# ========== WCAG 2.2 CRITERIA WITH CORRECTED INTERPRETATIONS ==========
+
+wcag_criteria:
+  principle_1_perceivable:
+    guideline_1_1_text_alternatives:
+      criterion_1_1_1:
+        id: "1.1.1"
+        name: "Non-text Content"
+        level: "A"
+        reference: "https://www.w3.org/WAI/WCAG22/quickref/#non-text-content"
+
+        requirement: "All non-text content has text alternative that serves the equivalent purpose"
+
+        detection_methods:
+          eslint: "jsx-a11y/alt-text, jsx-a11y/img-redundant-alt"
+          jest_axe: "Detects missing alt attributes"
+          manual: "Verify alt text quality and appropriateness"
+
+        framework_specific:
+          mui: |
+            MUI <SvgIcon> automatically adds aria-hidden="true" when titleAccess is undefined.
+            Do NOT flag as violation unless:
+              1. Icon conveys information (titleAccess should be set)
+              2. Icon is inside interactive element without text label
+
+        exceptions:
+          - "CAPTCHAs (must provide alternative)"
+          - "Decorative images (alt='' or aria-hidden='true')"
+          - "Images described in adjacent text"
+
+        common_patterns:
+          pass:
+            - "<img src='chart.png' alt='Sales increased 25% in Q4' />"
+            - "<img src='divider.png' alt='' />"
+            - "<SearchIcon aria-hidden='true' />"
+            - "<button><SearchIcon aria-hidden='true' />Search</button>"
+          fail:
+            - "<img src='submit.png' />"
+            - "<button><SearchIcon /></button> // No text label"
+            - "<IconButton><CloseIcon /></IconButton> // Missing aria-label"
+
+    guideline_1_3_adaptable:
+      criterion_1_3_5:
+        id: "1.3.5"
+        name: "Identify Input Purpose"
+        level: "AA"
+        reference: "https://www.w3.org/WAI/WCAG22/quickref/#identify-input-purpose"
+
+        requirement: "Input fields collecting user data use autocomplete attribute from Section 7 list"
+
+        applicability:
+          applies_to: "ONLY inputs collecting data about the user"
+          specific_purposes: "The 53 purposes listed in WCAG 2.1 Section 7"
+          purpose_list_url: "https://www.w3.org/TR/WCAG21/#input-purposes"
+
+          does_not_apply_to:
+            - "Search inputs"
+            - "Filter inputs"
+            - "Application-specific data entry"
+            - "Dates that aren't birthdays"
+            - "Non-user data (product names, etc.)"
+
+        common_purposes:
+          - "name, honorific-prefix, given-name, family-name"
+          - "email, tel, tel-country-code"
+          - "street-address, address-line1, city, postal-code, country"
+          - "bday, bday-day, bday-month, bday-year"
+          - "username, new-password, current-password"
+          - "cc-name, cc-number, cc-exp, cc-csc"
+
+        detection_methods:
+          eslint: "jsx-a11y/autocomplete-valid"
+          manual: "Review each input's purpose"
+
+        common_patterns:
+          pass:
+            - "<input type='email' autoComplete='email' />"
+            - "<input type='search' /> // Search NOT in purpose list"
+            - "<input type='text' /> // Generic app data, not user data"
+          fail:
+            - "<input type='email' /> // Collecting user email, missing autoComplete"
+            - "<input type='tel' /> // Collecting user phone"
+
+          false_positive_example: |
+            // This is NOT a violation (search is not a user data purpose):
+            <TextField
+              label="Search for medication"
+              type="search"
+              // autoComplete not required here
+            />
+
+      criterion_1_3_4:
+        id: "1.3.4"
+        name: "Orientation"
+        level: "AA"
+        reference: "https://www.w3.org/WAI/WCAG22/quickref/#orientation"
+
+        requirement: "Content not restricted to single orientation unless essential"
+
+        detection_methods:
+          eslint: "Check CSS for orientation locks"
+          manual: "Test in portrait and landscape"
+
+        violations:
+          - "@media (orientation: portrait) { display: none }"
+          - "screen.orientation.lock('portrait')"
+
+        exceptions:
+          - "Bank check scanning (landscape required)"
+          - "Piano app (portrait required)"
+
+    guideline_1_4_distinguishable:
+      criterion_1_4_3:
+        id: "1.4.3"
+        name: "Contrast (Minimum)"
+        level: "AA"
+        reference: "https://www.w3.org/WAI/WCAG22/quickref/#contrast-minimum"
+
+        requirement: "Text has contrast ratio of at least 4.5:1 (large text 3:1)"
+
+        large_text_definition:
+          - "18pt (24px) or larger"
+          - "14pt (18.5px) bold or larger"
+
+        detection_methods:
+          jest_axe: "Basic contrast detection (may have false positives)"
+          playwright_axe: "Accurate contrast on rendered page"
+          manual_required: "WebAIM Contrast Checker for theme colors"
+
+        tool: "https://webaim.org/resources/contrastchecker/"
+
+        exceptions:
+          - "Incidental text (part of inactive UI, pure decoration)"
+          - "Logotypes"
+
+        severity_guidance: |
+          Impact depends on element importance:
+          - Primary CTA button low contrast = CRITICAL
+          - Body text low contrast = HIGH
+          - Footer link low contrast = MEDIUM
+          - Decorative text low contrast = LOW
+
+      criterion_1_4_4:
+        id: "1.4.4"
+        name: "Resize Text"
+        level: "AA"
+        reference: "https://www.w3.org/WAI/WCAG22/quickref/#resize-text"
+
+        requirement: "Text can be resized up to 200% without loss of content or functionality"
+
+        corrected_interpretation: |
+          WCAG 1.4.4 does NOT forbid using px units for font sizes.
+          Modern browsers allow zooming regardless of units.
+
+          What IS forbidden:
+            - Preventing zoom via viewport meta tag
+            - Fixed-size containers that cause overflow
+            - Text that gets cut off when zoomed
+
+          What is ALLOWED:
+            - Using px, rem, em, or any other unit
+            - Fixed-width layouts that reflow properly
+
+        violations:
+          - "<meta name='viewport' content='user-scalable=no'>"
+          - "<meta name='viewport' content='maximum-scale=1'>"
+          - "Containers that clip text at 200% zoom"
+
+        not_violations:
+          - "font-size: 14px; (allowed, browsers still zoom)"
+          - "font-size: 0.875rem; (recommended for accessibility, but px is OK)"
+
+        detection_methods:
+          manual_required: "Zoom to 200% and test"
+          playwright: "Can automate zoom testing"
+
+      criterion_1_4_11:
+        id: "1.4.11"
+        name: "Non-text Contrast"
+        level: "AA"
+        reference: "https://www.w3.org/WAI/WCAG22/quickref/#non-text-contrast"
+
+        requirement: "UI components and graphical objects have 3:1 contrast ratio"
+
+        applies_to:
+          - "User interface components (buttons, inputs, checkboxes)"
+          - "Graphical objects required to understand content"
+          - "Focus indicators"
+
+        detection_methods:
+          manual_required: "WebAIM Contrast Checker"
+          playwright_axe: "Can detect some UI contrast issues"
+
+  principle_2_operable:
+    guideline_2_4_navigable:
+      criterion_2_4_5:
+        id: "2.4.5"
+        name: "Multiple Ways"
+        level: "AA"
+        reference: "https://www.w3.org/WAI/WCAG22/quickref/#multiple-ways"
+
+        requirement: "More than one way to locate pages within a set of Web pages"
+
+        applicability:
+          applies_to: "Set of Web pages"
+          does_not_apply:
+            - "Single-page applications with one primary function"
+            - "Web applications (vs. Web sites)"
+            - "Results of a process"
+
+        interpretation: |
+          "Set of Web pages" means a collection of pages linked together.
+
+          Heisenberg context:
+            - If app has only Search → Detail → Back flow: MAY NOT APPLY
+            - If app has Search, Detail, Dashboard, Settings: APPLIES
+
+          Exemptions:
+            - Single-function tools (calculator, converter)
+            - Results pages (search results, checkout confirmation)
+
+        examples_of_compliance:
+          - "Search + Site map"
+          - "Search + Browse by category"
+          - "Navigation menu + Breadcrumbs"
+          - "Search + Recent items"
+
+        detection_methods:
+          manual_required: "Count routes/pages, assess navigation options"
+          decision_tree: |
+            1. Count distinct pages/routes
+            2. If < 3 pages: Likely exempt (document decision)
+            3. If >= 3 pages: Need 2+ navigation methods
+
+      criterion_2_4_7:
+        id: "2.4.7"
+        name: "Focus Visible"
+        level: "AA"
+        reference: "https://www.w3.org/WAI/WCAG22/quickref/#focus-visible"
+
+        requirement: "Keyboard focus indicator is visible"
+
+        detection_methods:
+          eslint: "Cannot detect"
+          jest_axe: "Cannot detect"
+          manual_required: "Tab through all elements, verify visible outline/indicator"
+          code_review: "Search for 'outline: none' without replacement"
+
+        common_violations:
+          - "* { outline: none }"
+          - "button:focus { outline: none }"
+          - "sx={{ outline: 'none' }} on focusable element"
+
+        minimum_requirements:
+          - "Must be visible when focused via keyboard"
+          - "Must have sufficient contrast (3:1 against background)"
+          - "Can use :focus-visible to hide on mouse click"
+
+        severity: "CRITICAL if removed, HIGH if insufficient contrast"
+
+      criterion_2_4_11:
+        id: "2.4.11"
+        name: "Focus Not Obscured (Minimum)"
+        level: "AA"
+        reference: "https://www.w3.org/WAI/WCAG22/quickref/#focus-not-obscured-minimum"
+
+        requirement: "Focused element not entirely hidden by author-created content"
+
+        note: "NEW in WCAG 2.2"
+
+        common_causes:
+          - "Sticky headers covering focused elements"
+          - "Fixed footers overlapping content"
+          - "Modal overlays"
+
+        detection_methods:
+          manual_required: "Tab through page, check if focus ever hidden"
+          playwright: "Can automate with scroll checks"
+
+    guideline_2_5_input_modalities:
+      criterion_2_5_8:
+        id: "2.5.8"
+        name: "Target Size (Minimum)"
+        level: "AA"
+        reference: "https://www.w3.org/WAI/WCAG22/quickref/#target-size-minimum"
+
+        requirement: "Interactive elements are at least 24x24 CSS pixels"
+
+        note: "NEW in WCAG 2.2, reduced from 44x44 in WCAG 2.1"
+
+        exceptions:
+          - "Spacing: Target is smaller but has 24px spacing to next target"
+          - "Inline: Links within a sentence (inline text)"
+          - "User agent control: Browser default UI"
+          - "Essential: Size is essential to information"
+
+        detection_methods:
+          manual_required: "Measure with browser DevTools"
+          playwright: "Can measure element dimensions"
+
+        severity_guidance: |
+          - Touch-only mobile app: CRITICAL if < 24px
+          - Desktop app with mouse: HIGH if < 24px
+          - Inline text links: Likely exempt
+
+        best_practice: "Aim for 44x44px even though 24x24px is minimum"
+
+  principle_3_understandable:
+    guideline_3_2_predictable:
+      criterion_3_2_6:
+        id: "3.2.6"
+        name: "Consistent Help"
+        level: "A"
+        reference: "https://www.w3.org/WAI/WCAG22/quickref/#consistent-help"
+
+        level_note: "Level A in WCAG 2.2 (was AA in earlier drafts)"
+        note: "NEW in WCAG 2.2"
+
+        requirement: "Help mechanisms appear in consistent order when they exist"
+
+        applicability:
+          applies_when: "Help mechanism exists on multiple pages"
+          does_not_apply: "If no help mechanism exists"
+
+        corrected_interpretation: |
+          Having ZERO help is compliant.
+          Only fails if help exists but is inconsistently placed.
+
+        help_mechanisms:
+          - "Contact information"
+          - "Human contact (chat, phone)"
+          - "Self-help option (FAQ, help page)"
+          - "Fully automated contact (chatbot)"
+
+        compliance:
+          pass:
+            - "No help mechanism anywhere"
+            - "Help icon in same header location on all pages"
+            - "Contact link in same footer position on all pages"
+          fail:
+            - "Help in header on page 1, footer on page 2"
+            - "Contact link third in nav on page 1, first on page 2"
+
+        detection_methods:
+          manual_required: "Check if help exists, verify consistent position"
+
+    guideline_3_3_input_assistance:
+      criterion_3_3_8:
+        id: "3.3.8"
+        name: "Accessible Authentication (Minimum)"
+        level: "AA"
+        reference: "https://www.w3.org/WAI/WCAG22/quickref/#accessible-authentication-minimum"
+
+        note: "NEW in WCAG 2.2"
+
+        requirement: "Authentication does not rely on cognitive function test"
+
+        applies_to:
+          - "Login forms"
+          - "Password entry"
+          - "Security questions"
+
+        allowed:
+          - "Recognizing objects (click the cat)"
+          - "Personal content (select your uploaded photo)"
+          - "Copy/paste support"
+          - "Password manager support (autocomplete='current-password')"
+
+        not_allowed:
+          - "Transcription CAPTCHAs without alternative"
+          - "Math problems"
+          - "Puzzles"
+
+        detection_methods:
+          manual_required: "Review authentication flow"
+
+  principle_4_robust:
+    guideline_4_1_compatible:
+      criterion_4_1_1:
+        id: "4.1.1"
+        name: "Parsing"
+        level: "A"
+        reference: "https://www.w3.org/WAI/WCAG22/quickref/#parsing"
+
+        status: "OBSOLETE in WCAG 2.2"
+        note: "Removed because modern browsers parse HTML forgivingly"
+
+        applicability:
+          wcag_2_1: "Required"
+          wcag_2_2: "Not applicable"
+
+        detection_methods:
+          status: "Mark as 'na' for WCAG 2.2 audits"
+
+      criterion_4_1_3:
+        id: "4.1.3"
+        name: "Status Messages"
+        level: "AA"
+        reference: "https://www.w3.org/WAI/WCAG22/quickref/#status-messages"
+
+        requirement: "Status messages can be programmatically determined through role or properties"
+
+        applies_to:
+          - "Success messages (item added to cart)"
+          - "Error messages (form validation)"
+          - "Progress updates (5 of 10 steps)"
+          - "Wait states (loading...)"
+
+        implementation:
+          assertive:
+            - "role='alert' (auto announced immediately)"
+            - "aria-live='assertive'"
+            - "Use for errors and urgent updates"
+
+          polite:
+            - "role='status' (announced when SR is idle)"
+            - "aria-live='polite'"
+            - "Use for success messages and progress"
+
+        framework_specific:
+          mui_alert: |
+            MUI <Alert> component defaults to role="alert".
+            Do NOT recommend adding role="alert" - it's already there.
+
+            Only suggest changing to role="status" if:
+              - Message is non-urgent (success, info)
+              - Polite announcement is more appropriate
+
+        detection_methods:
+          jest_axe: "Can detect missing roles on dynamic content"
+          manual: "Trigger status changes with screen reader active"
+
+# ========== USAGE INSTRUCTIONS ==========
+
+usage_instructions:
+  for_llms:
+    prerequisite_check: |
+      Before running audit, verify:
+        1. Required tooling installed (eslint-plugin-jsx-a11y, jest-axe, @axe-core/playwright)
+        2. Output directories exist (docs/accessibility/)
+        3. Project uses React + TypeScript (protocol optimized for this stack)
+
+    execution:
+      - "Follow execution_steps sequentially (step_1 through step_9)"
+      - "Generate JSON outputs conforming to output_schema"
+      - "Generate Markdown reports for human readability"
+      - "Apply framework_awareness rules to avoid false positives"
+      - "Use severity_rubric for risk-based prioritization"
+      - "Mark findings as 'manual-required' when tooling cannot decide"
+
+    quality_gates:
+      - "Zero false positives from MUI framework defaults"
+      - "Every finding has evidence (file + line + detection method)"
+      - "Severity is risk-based, not WCAG-level-based"
+      - "Applicability conditions applied correctly"
+      - "JSON validates against schemas"
+      - "Manual validation completed for required checks"
+
+    limitations_to_document:
+      - "Tooling cannot detect subjective quality (alt text appropriateness)"
+      - "Some checks require human judgment (2.4.5 applicability)"
+      - "Color contrast needs manual theme validation"
+      - "Keyboard flow requires manual testing"
+
+  for_humans:
+    quick_start: |
+      1. Install tooling:
+         npm install --save-dev eslint-plugin-jsx-a11y jest-axe @axe-core/playwright
+
+      2. Configure ESLint (.eslintrc.js):
+         extends: ['plugin:jsx-a11y/recommended']
+
+      3. Run audit:
+         Ask LLM: "Run accessibility audit using protocol v2.0.0"
+
+      4. Review outputs:
+         - docs/accessibility/accessibility-gaps-{date}.json
+         - docs/accessibility/audit-report-{date}.md
+         - docs/accessibility/accessibility-remediation-{date}.json
+         - docs/accessibility/remediation-plan-{date}.md
+
+      5. Implement fixes:
+         - Prioritize by severity (critical → low)
+         - Use code examples from remediation plan
+         - Re-run audit after each fix
+
+    maintenance:
+      - "Re-run audit after major feature additions"
+      - "Include accessibility checks in CI/CD (pa11y-ci)"
+      - "Update protocol when WCAG updates (next: WCAG 3.0)"
+
+# ========== MAINTENANCE ==========
+
+protocol_maintenance:
+  version_control:
+    current_version: "2.0.0"
+    changelog: "docs/protocols/CHANGELOG.md"
+    update_schedule: "Review when WCAG updates released"
+
+  wcag_version_tracking:
+    current: "WCAG 2.2"
+    published: "2023-10-05"
+    next_expected: "WCAG 3.0 (W3C Silver) - in development"
+    monitoring: "https://www.w3.org/WAI/standards-guidelines/wcag/"
+
+  protocol_updates:
+    trigger_review:
+      - "WCAG specification updates"
+      - "Framework updates (MUI, React)"
+      - "Tooling updates (ESLint, axe-core)"
+      - "False positive reports"
+      - "New accessibility patterns emerge"
+
+    update_process:
+      - "Document issue in changelog"
+      - "Update affected criteria in wcag_criteria section"
+      - "Update framework_awareness if framework changes"
+      - "Increment version (major.minor.patch)"
+      - "Test on fixture repository"
+      - "Publish updated protocol"
+
+# ========== APPENDIX ==========
+
+appendix:
+  severity_examples:
+    example_1:
+      finding: "Missing alt text on logo image"
+      wcag: "1.1.1 (Level A)"
+      impact: "Blocker - screen reader users don't know what image represents"
+      likelihood: "All users encounter it"
+      severity: "CRITICAL"
+      reason: "Logo appears on every page, conveys brand identity"
+
+    example_2:
+      finding: "Missing alt text on decorative footer divider"
+      wcag: "1.1.1 (Level A)"
+      impact: "None - image is purely decorative"
+      likelihood: "All users encounter it, but no impact"
+      severity: "LOW"
+      reason: "Should have alt='' or aria-hidden, but minimal user harm"
+
+    example_3:
+      finding: "Poor contrast on disabled button"
+      wcag: "1.4.3 (Level AA)"
+      impact: "Minor - button is already indicated as disabled by other means"
+      likelihood: "Only users with low vision affected"
+      severity: "LOW"
+      reason: "Disabled state has exceptions, other indicators present"
+
+    example_4:
+      finding: "No skip navigation link"
+      wcag: "2.4.1 (Level A)"
+      impact_context_1: "Site has 3-item navigation"
+      likelihood_1: "Common"
+      severity_1: "MEDIUM (friction, not blocker)"
+      impact_context_2: "Site has 50-item navigation"
+      likelihood_2: "All keyboard users"
+      severity_2: "HIGH (significant degradation)"
+      reason: "Same criterion, different severity based on context"
+
+  tooling_comparison:
+    eslint_jsx_a11y:
+      pros:
+        - "Fast (static analysis)"
+        - "Runs on save during development"
+        - "Catches structural issues early"
+      cons:
+        - "Cannot detect runtime issues"
+        - "Cannot calculate contrast"
+        - "Cannot test keyboard flow"
+      use_for: "Development-time checks"
+
+    jest_axe:
+      pros:
+        - "Tests rendered components"
+        - "Catches ARIA issues"
+        - "Integrates with existing test suite"
+      cons:
+        - "Component-scope only"
+        - "Cannot test navigation flow"
+        - "May miss integration issues"
+      use_for: "Component accessibility tests"
+
+    playwright_axe:
+      pros:
+        - "Full-page analysis"
+        - "Tests integrated application"
+        - "Catches real user experience issues"
+      cons:
+        - "Slower than unit tests"
+        - "Requires running app"
+      use_for: "E2E accessibility validation"
+
+    manual_testing:
+      pros:
+        - "Catches everything"
+        - "Validates real user experience"
+        - "Tests subjective quality"
+      cons:
+        - "Time-consuming"
+        - "Requires expertise"
+        - "Not automatable"
+      use_for: "Final validation before release"
+
+  reference_links:
+    wcag:
+      - "WCAG 2.2 Spec: https://www.w3.org/TR/WCAG22/"
+      - "Quick Reference: https://www.w3.org/WAI/WCAG22/quickref/"
+      - "Understanding WCAG: https://www.w3.org/WAI/WCAG22/Understanding/"
+      - "Techniques: https://www.w3.org/WAI/WCAG22/Techniques/"
+
+    tools:
+      - "WebAIM Contrast Checker: https://webaim.org/resources/contrastchecker/"
+      - "eslint-plugin-jsx-a11y: https://github.com/jsx-eslint/eslint-plugin-jsx-a11y"
+      - "jest-axe: https://github.com/nickcolley/jest-axe"
+      - "axe-core: https://github.com/dequelabs/axe-core"
+      - "Playwright: https://playwright.dev/"
+
+    learning:
+      - "WebAIM Articles: https://webaim.org/articles/"
+      - "Deque University: https://dequeuniversity.com/"
+      - "MDN Accessibility: https://developer.mozilla.org/en-US/docs/Web/Accessibility"
+      - "ARIA Authoring Practices: https://www.w3.org/WAI/ARIA/apg/"
