@@ -9,12 +9,25 @@
   },
   "license": "MIT",
   "scripts": {
-    "lint": "pnpm eslint .",
-    "test": "pnpm vitest run",
-    "typecheck": "pnpm tsc --noEmit"
+    "lint": "eslint --no-error-on-unmatched-pattern .",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --check ."
   },
   "engines": {
     "node": ">=20.0.0"
   },
-  "packageManager": "pnpm@9.0.0"
+  "packageManager": "pnpm@9.0.0",
+  "devDependencies": {
+    "@eslint/js": "^9.14.0",
+    "@types/node": "^20.11.30",
+    "eslint": "^9.14.0",
+    "globals": "^15.8.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^8.12.1",
+    "vitest": "^1.5.3"
+  },
+  "type": "module"
 }

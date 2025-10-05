@@ -10,7 +10,9 @@ export default tseslint.config(
       'reports',
       'node_modules',
       '.turbo',
-      '.cache'
+      '.cache',
+      'eslint.config.js',
+      'vitest.config.ts'
     ]
   },
   {
