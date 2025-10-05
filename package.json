@@ -15,7 +15,9 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --check .",
     "schema:types": "node scripts/generate-schema-types.mjs",
-    "schema:validate": "node scripts/validate-schemas.mjs"
+    "schema:validate": "node scripts/validate-schemas.mjs",
+    "cli:build": "pnpm --filter @crochet/cli build",
+    "cli:dev": "pnpm --filter @crochet/cli dev"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -30,6 +32,7 @@
     "globals": "^15.8.0",
     "json-schema-to-typescript": "^15.0.4",
     "prettier": "^3.2.5",
+    "tsup": "^8.5.0",
     "typescript": "^5.4.5",
     "typescript-eslint": "^8.12.1",
     "vitest": "^3.2.4"

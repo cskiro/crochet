@@ -10,6 +10,7 @@ packages/**/dist/
 coverage/
 playwright-report/
 reports/
+!examples/reports/
 reports/accessibility/
 test-results/
 

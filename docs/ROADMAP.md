@@ -37,10 +37,10 @@ Transform the accessibility audit workflow into a reusable public utility that s
 - ✅ Playbooks reference official WCAG resources and align with protocol instructions.
 - ✅ Type generation and validation harness in place to guard against regressions.
 
-## Phase 3 – CLI & Automation
-- Scaffold CLI package (`packages/cli`) to orchestrate protocol execution, schema validation, and report generation.
+## Phase 3 – CLI & Automation (In Progress)
+- ✅ Scaffold CLI package (`packages/cli`) with protocol inspection and schema validation commands.
 - Implement framework adapters (React/MUI baseline) via dependency inversion.
-- Integrate Vitest coverage for core modules and golden snapshot tests for sample audits.
+- ✅ Integrate Vitest coverage for CLI utilities (schema + protocol modules).
 - Wire Playwright + `@axe-core/playwright` smoke suite gated by CI flag.
 - Publish reusable GitHub Action to run CLI in consumer pipelines.
 
