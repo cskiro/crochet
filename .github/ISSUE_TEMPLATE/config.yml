@@ -1,0 +1,7 @@
+defaults:
+  - scope: issues
+    label: triage
+contact_links:
+  - name: Security reports
+    url: mailto:INSERT%20SECURITY%20CONTACT
+    about: Please report security vulnerabilities privately per SECURITY.md.

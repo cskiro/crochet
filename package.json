@@ -1,0 +1,20 @@
+{
+  "name": "crochet",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Accessibility audit automation toolkit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cskiro/crochet"
+  },
+  "license": "MIT",
+  "scripts": {
+    "lint": "pnpm eslint .",
+    "test": "pnpm vitest run",
+    "typecheck": "pnpm tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "pnpm@9.0.0"
+}
