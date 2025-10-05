@@ -39,10 +39,21 @@ Transform the accessibility audit workflow into a reusable public utility that s
 
 ## Phase 3 – CLI & Automation (In Progress)
 - ✅ Scaffold CLI package (`packages/cli`) with protocol inspection and schema validation commands.
-- Implement framework adapters (React/MUI baseline) via dependency inversion.
 - ✅ Integrate Vitest coverage for CLI utilities (schema + protocol modules).
+- ✅ Fix Node.js ESM JSON import compatibility (runtime schema loading).
+- ✅ CLI commands functional: `protocol-info`, `schema-list`, `schema-validate`.
+- ✅ Prepare hook builds CLI automatically on `pnpm install`.
+- Implement framework adapters (React/MUI baseline) via dependency inversion.
 - Wire Playwright + `@axe-core/playwright` smoke suite gated by CI flag.
 - Publish reusable GitHub Action to run CLI in consumer pipelines.
+
+### Phase 3 Success Criteria (Partial)
+- ✅ CLI commands execute without errors (`schema-list`, `protocol-info`, `schema-validate`).
+- ✅ All quality gates pass: lint, test (3/3), typecheck, schema validation.
+- ✅ CLI builds via prepare hook (ESM-only bundle with tsup).
+- ⏳ Framework adapters pending.
+- ⏳ Playwright integration pending.
+- ⏳ GitHub Action pending.
 
 ## Phase 4 – Documentation & Education
 - Stand up docs site (Docusaurus) with quick start, architecture overview, troubleshooting, and learning resources.
