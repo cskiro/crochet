@@ -2,10 +2,10 @@
 
 ## Overview
 
-Transform the Heisenberg accessibility audit workflow into a reusable, public utility that ships opinionated WCAG 2.2 Level AA automation, documentation, and tooling.
+Transform the accessibility audit workflow into a reusable public utility that ships opinionated WCAG 2.2 Level AA automation, documentation, and tooling.
 
 ## Phase 0 – Context Capture ✅ (Completed 2025-10-04)
-- Cloned source repo artifacts (audit reports, protocol YAML, schemas).
+- Cloned source audit artifacts (protocols, schemas, reports).
 - Exported reusable knowledge so future runs do not rely on hidden paths.
 - Inventoried accessibility assets (automation scripts, manual checklists, remediation plans, contrast results).
 - Established success metrics and non-goals for the public utility.
@@ -23,11 +23,19 @@ Transform the Heisenberg accessibility audit workflow into a reusable, public ut
 - ✅ Roadmap and planning docs captured in version control.
 - ✅ Internal planning artifacts established instead of GitHub Issues for initial execution.
 
-## Phase 2 – Protocol & Packaging (Next)
-- Relocate the WCAG audit protocol into `packages/protocols/` with templated project metadata.
-- Normalize JSON schemas in `packages/schemas/`, publish TypeScript types, and add validation test harness.
-- Extract manual checklists and testing guides into `docs/playbooks/` with W3C references.
-- Provide anonymized example outputs (`examples/heisenberg/`) for JSON + Markdown reports.
+## Phase 2 – Protocol & Packaging (In Progress)
+- ✅ Copy WCAG audit protocol into `docs/protocols/` with project-local changelog.
+- ✅ Normalize JSON schemas under `packages/schemas/` and prepare for publishing.
+- ✅ Relocate manual checklists and automation guides to `docs/playbooks/`.
+- ✅ Provide anonymized sample outputs under `examples/reports/`.
+- ▢ Generate TypeScript types from schemas for downstream consumers.
+- ▢ Add validation test harness to verify sample outputs against schemas.
+
+### Phase 2 Success Criteria
+- Protocol, schemas, playbooks, and examples live in the public repo with project-owned change history.
+- Schemas validated against sample reports and ready for publication as `@crochet/schemas`.
+- Playbooks reference official WCAG resources and align with protocol instructions.
+- Follow-up tasks (type generation, validation harness) tracked for completion.
 
 ## Phase 3 – CLI & Automation
 - Scaffold CLI package (`packages/cli`) to orchestrate protocol execution, schema validation, and report generation.
@@ -39,7 +47,7 @@ Transform the Heisenberg accessibility audit workflow into a reusable, public ut
 ## Phase 4 – Documentation & Education
 - Stand up docs site (Docusaurus) with quick start, architecture overview, troubleshooting, and learning resources.
 - Author protocol deep-dive, severity rubric explanation, and update policy for WCAG revisions.
-- Create end-to-end onboarding tutorial, including sample CI configuration and remediation workflow guidance.
+- Create end-to-end onboarding tutorial, including sample CI configuration and remediation guidance.
 
 ## Phase 5 – Release & Adoption
 - Finalize semantic versioning strategy, Changesets workflow, and release notes templates.
