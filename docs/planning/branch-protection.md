@@ -2,12 +2,19 @@
 
 Date: 2025-10-05
 
-## Current Settings (Observed)
-- `main` requires pull requests but direct pushes are still possible (initial push bypassed rule: "Changes must be made through a pull request").
-- Status checks (CI) are configured but not yet marked as required.
+## Desired Settings
+- Require pull requests before merging (no bypass for admins).
+- Require status checks to pass before merging (CI workflow).
+- Require linear history.
+- Optionally require signed commits once release process stabilizes.
 
-## Next Actions
-1. Enforce "Require a pull request before merging" without allowing bypass for admins or direct pushes.
-2. Mark `CI` workflow as a required status check after it stabilizes.
-3. Enable "Require linear history" and "Require signed commits" if desired for provenance.
-4. Re-run push via PR to verify enforcement after adjustments.
+## Action Items
+1. In GitHub UI (`Settings` → `Branches` → `Branch protection rules`), edit the `main` rule:
+   - Enable **Require a pull request before merging** and uncheck "Allow force pushes" and "Allow deletions".
+   - Check **Require approvals** (1+) and **Dismiss stale pull request approvals**.
+   - Enable **Require status checks to pass before merging** and select the `CI` workflow.
+   - Enable **Require linear history**.
+2. Re-run a test PR to ensure direct pushes are blocked (current pushes still bypass the rule, as seen on `git push`).
+3. Document enforcement status once confirmed.
+
+> Note: The automation environment cannot modify GitHub settings directly; these steps must be completed through the repository settings interface.
