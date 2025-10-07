@@ -24,12 +24,12 @@ Modern, LLM-ready accessibility auditing utilities for WCAG 2.2 Level AA complia
 Build and run the Crochet command-line interface:
 
 ```bash
-pnpm cli:build         # bundle @crochet/cli via tsup
-pnpm --filter @crochet/cli exec crochet schema-list
-pnpm --filter @crochet/cli exec crochet schema-validate examples/reports/accessibility-gaps.sample.json
+pnpm install           # builds the CLI during prepare
+pnpm run crochet schema-list
+pnpm run crochet schema-validate examples/reports/accessibility-gaps.sample.json
 ```
 
-The CLI currently supports protocol inspection (`crochet protocol-info`) and JSON schema validation (`crochet schema-validate`).
+The CLI currently supports protocol inspection (`crochet protocol-info`) and JSON schema validation (`crochet schema-validate`). Use `pnpm cli:build` if you need to regenerate the bundle manually.
 
 ## Contributing
 
